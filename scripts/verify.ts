@@ -1,16 +1,5 @@
-import * as readline from "readline";
-import { execSync } from "child_process";
-
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-});
-
-const ask = (question: string) => {
-    return new Promise<string>(resolve => {
-        rl.question(question, resolve);
-    });
-};
+import { ask, rl } from './cmd.js';
+import { execSync } from 'child_process';
 
 const main = async () => {
     try {
@@ -40,6 +29,7 @@ const main = async () => {
         console.log("\nRunning:", cmd);
         execSync(cmd, { stdio: "inherit" });
     } catch (error: any) {
+        console.error(error);
         rl.close();
     }
 };
