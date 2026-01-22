@@ -1,57 +1,74 @@
-# Sample Hardhat 3 Beta Project (`mocha` and `ethers`)
+# Coset Token (CST)
 
-This project showcases a Hardhat 3 Beta project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+## Address List
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+| Network                         |                   Address                          |
+|---------------------------------|----------------------------------------------------|
+| Mantle Sepolia Testnet          |     [0x77a90090c9bcc45940e18657fb82fb70a2d494fd](https://sepolia.mantlescan.xyz/address/0x77a90090c9bcc45940e18657fb82fb70a2d494fd)          |
+| Cronos Testnet                  |     [0x6e0a0ba0e4e7433e65e6b4a12860baf43b0b8f06](https://explorer.cronos.org/testnet/address/0x6e0a0ba0e4e7433e65e6b4a12860baf43b0b8f06)     |
 
-## Project Overview
 
-This example project includes:
+Hardhat project for the `Coset` ERC-20 token with **EIP-3009 gasless transfers** (transfer/receive/cancel with signed authorization).
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+## Contracts
 
-## Usage
+- **`contracts/Coset.sol`**: ERC-20 token
+  - Name: `Coset`
+  - Symbol: `CST`
+  - Decimals: `6`
+  - Initial supply: `1,000,000 * 10^6` minted to `initialOwner` (constructor arg)
+  - Includes `permit()` support via OpenZeppelin `ERC20Permit`
+- **`contracts/EIP3009.sol`**: internal EIP-3009 implementation
+  - `transferWithAuthorization(...)`
+  - `receiveWithAuthorization(...)`
+  - `cancelAuthorization(...)`
 
-### Running Tests
+## Networks
 
-To run all the tests in the project, execute the following command:
+This project can be deployed to **any EVM-compatible chain** by adding a network entry to `hardhat.config.ts` and passing `--network <name>`.
 
-```shell
-npx hardhat test
-```
+Currently configured networks:
 
-You can also selectively run the Solidity or `mocha` tests:
+- **`mantle`**: chainId `5000`, `https://rpc.mantle.xyz`
+- **`mantle-testnet`**: chainId `5003`, `https://rpc.sepolia.mantle.xyz`
+- **`cronos`**: chainId `25`, `https://evm.cronos.org`
+- **`cronos-testnet`**: chainId `338`, `https://evm-t3.cronos.org`
 
-```shell
-npx hardhat test solidity
-npx hardhat test mocha
-```
+To add another chain, extend `networks` in `hardhat.config.ts` with:
+- `chainId`
+- `url` (RPC)
+- `accounts` (uses `OWNER_PRIVATE_KEY` from `.env`)
 
-### Make a deployment to Sepolia
+## Deploy
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
-
-To run the deployment to a local chain:
-
-```shell
-npx hardhat ignition deploy ignition/modules/Coset.ts
-```
-
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
+Deploy to any configured network:
 
 ```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+npx hardhat run scripts/deploy.ts --network <networkName>
 ```
 
-After setting the variable, you can run the deployment with the Sepolia network:
+This repo also includes convenience scripts for Mantle:
 
 ```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Coset.ts
+npm run deploy:testnet
+npm run deploy:mainnet
 ```
+
+The deploy script currently uses a **hardcoded** `initialOwner` address in `scripts/deploy.ts`. Update it before deploying if needed.
+
+## Verify
+
+Verify on any configured network (and with `ETHERSCAN_API_KEY` set):
+
+```shell
+npx hardhat verify --network <networkName> <contractAddress> <constructorArgs...>
+```
+
+This repo also includes an interactive helper script:
+
+```shell
+npm run verify
+```
+
+For `Coset`, the constructor arguments are just:
+- `initialOwner` (address)
